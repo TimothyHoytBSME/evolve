@@ -1,0 +1,58 @@
+
+
+html {
+  -webkit-text-size-adjust: 100%; /* 2 */
+  color: white;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+body {
+  background-color: black;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+main {
+  position: relative;
+  background-color: rgb(64, 64, 64);
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.creature{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1;
+  position: absolute;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 700;
+  color: black;
+  z-index: 2;
+}
+
+
+
+.food{
+  position: absolute;
+  background-color: white;
+  aspect-ratio: 1;
+  z-index: 1;
+}
+
+.cpointer{
+  --creature-paint-size: 20%;
+  width: 20%;
+  background-color: black;
+  aspect-ratio: 1;
+  position: absolute;
+  border-radius: 50%;
+  top: 0;
+  left: calc(50% - var(--creature-paint-size) / 2);
+  z-index: 3;
+}
