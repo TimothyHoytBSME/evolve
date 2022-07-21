@@ -1,14 +1,17 @@
 {
     "cSpell.words": [
+        "aimrange",
         "cpointer",
         "degtorad",
         "diffvec",
         "diffx",
         "diffy",
         "dirvec",
+        "glidesteps",
         "newpos",
         "posx",
         "radtodeg",
+        "spinglide",
         "srat"
     ]
 }

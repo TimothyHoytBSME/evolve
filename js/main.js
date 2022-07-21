@@ -1,42 +1,7 @@
 
 
-
-// 
-// main loop
-
-
 // imports
 const {sin, cos, random, floor, abs} = Math
-
-function looper(){
-    if(this.time === undefined || this.time === null){ this.time = 0; this.delay = 0; }
-    // var w = window.innerWidth;
-    // var h = window.innerHeight;
-    // var ar = h/w;
-
-    creature.targetPoint = [food.xx,food.yy]
-    creature2.targetPoint = [food2.xx,food2.yy]
-    // console.log('C1 target: ',creature.targetPoint)
-    // console.log("C2 target: ", creature2.targetPoint)
-    // const radius = 10;
-    //creature.accel = 0;
-    //setRotation(90+this.time/4, creature)
-    // console.log(mouseP, mouseIn)
-    //console.log('looping',this.time)
-    // console.log('rotation', creature.rotation)
-    //console.log(angleOfTargetPoint(mouseP[0],mouseP[1],creature))
-    // console.log("creature",creature.turning)
-
-    //console.log("creature1",creature2.turning)
-    // console.log(floor(creature.xx), floor(creature.yy))
-    // console.log(floor(mouseP[0]), floor(mouseP[1]))
-
-
-    for(var i=0; i<creatures.length; i++){calc(creatures[i])}
-    this.time++;
-    setTimeout(()=>{looper();},this.delay)    
-}
-
 
 
 //
@@ -57,41 +22,137 @@ creature.appendChild(cpointer)
 main.appendChild(creature)
 main.appendChild(food)
 
+//set environment
 const mouseP = [0,0]
 var mouseIn = false;
 const creatureStartSize = 5;
+const creatureStartCount = 10;
+const foodStartCount = 40;
 const dampC = 0.02;
 const dampR = 0.04;
+var firstframe = true;
+const creatures = [];
+const foods = [];
+const starveRate = 0.002;
+const minimumSize = 1;
+const puberty = 16;
 
-//set initial values of fundamentals
+//set starting creature parameters
 creature.maxSpeed = 1;
 creature.accel = 0.01;
-creature.vel = [0,0];
-creature.spin = 0;
 creature.spinAccel = 0.1;
 creature.maxSpin = 2;
+creature.range = 100;
+creature.spinglide = 160;
+creature.glidesteps = 40;
+creature.aimrange = 20;
+
+//set initial values of fundamentals
+creature.vel = [0,0];
+creature.spin = 0;
 creature.turning = 0;   //(-1, 0, 1) for CCW, none, CW
-creature.targetPoint = null; //becomes vector of location values
+creature.target = null; //becomes vector of location values
 
 setSize(creatureStartSize, creature)
 randomColor(creature)
-setRotation(90, creature)
+setRotation(60, creature)
 setLocation(-50,-50,creature)
-
-const creatures = [];
-creatures.push(creature)
-const creature2 = cloneCreature(creature)
-// food.xx = 0;
-// food.yy = 0;
 sizeFood(3,food)
 positionFood(random()*160-80,random()*160-80,food)
 
-
-const foods = [];
 foods.push(food)
-const food2 = cloneFood(food)
+creatures.push(creature)
 
-// positionFood(-40,-40,food2)
+function looper(){
+    if(this.time === undefined || this.time === null){ this.time = 0; this.delay = 0; }
+    if(firstframe){
+        for(let i = 1; i< creatureStartCount; i++){
+            cloneCreature(creature)
+        }
+        for(let i = 1; i< foodStartCount; i++){
+            cloneFood(food)
+        }
+    }
+
+    if(this.time%50 === 0){
+        cloneFood(food)
+    }
+
+    // var w = window.innerWidth;
+    // var h = window.innerHeight;
+    // var ar = h/w;
+
+    // creature.targetPoint = [food.xx,food.yy]
+    // creature2.targetPoint = [food2.xx,food2.yy]
+    // console.log('C1 target: ',creature.targetPoint)
+    // console.log("C2 target: ", creature2.targetPoint)
+    // const radius = 10;
+    //creature.accel = 0;
+    //setRotation(90+this.time/4, creature)
+    // console.log(mouseP, mouseIn)
+    //console.log('looping',this.time)
+    // console.log('rotation', creature.rotation)
+    //console.log(angleOfTargetPoint(mouseP[0],mouseP[1],creature))
+    // console.log("creature",creature.turning)
+
+    //console.log("creature1",creature2.turning)
+    // console.log(floor(creature.xx), floor(creature.yy))
+    // console.log(floor(mouseP[0]), floor(mouseP[1]))
+
+
+    for(var i=0; i<creatures.length; i++){calc(creatures[i])}
+    this.time++;
+    firstframe = false;
+    setTimeout(()=>{looper();},this.delay)    
+}
+
+
+//////////
+//per frame calcs
+//////////
+
+function calc(which){
+    setSize(which.size-starveRate,which)
+    if(which.size<minimumSize){
+        kill(which)
+    }
+
+    calcNearestTarget(which)
+
+
+    const newpos = [which.xx + which.vel[0] , which.yy + which.vel[1]]
+    setLocation( newpos[0], newpos[1], which )
+    setRotation(which.rotation + which.spin, which)
+    calcTurn(which)
+    calcSpin(which)
+
+    const dirvec = dirVecFromDeg(which.rotation)
+    which.vel[0] *= 1-dampC;
+    which.vel[1] *= 1-dampC;
+
+    if(shouldAccel(which)[0]){
+        which.vel[0] += dirvec[0]*which.accel
+    }
+    if(shouldAccel(which)[1]){
+        which.vel[1] += dirvec[1]*which.accel
+    }
+
+    let speed = Math.sqrt(which.vel[0]**2 + which.vel[1]**2)
+
+    const srat = speed/which.maxSpeed;
+    if(srat >1){
+        which.vel[0] /= srat
+        which.vel[1] /= srat
+    }
+    
+}
+
+
+
+
+
+
+
 
 window.addEventListener("mousemove", (evt)=>{
     mouseP[0] = 100*(evt.clientX - window.innerWidth/2) / (window.innerWidth/2)
@@ -104,7 +165,7 @@ window.addEventListener("mouseout", ()=>{
     mouseIn = false;
 })
 window.addEventListener("resize", ()=>{
-    console.log('resize event size',creature.size)
+    // console.log('resize event size',creature.size)
     for(var c of creatures){
         setSize(c.size,c)
     }
@@ -129,24 +190,24 @@ function cloneFood(piece){
 }
 
 function positionFood(xx,yy,piece){
-    console.log('positioning food to',xx,yy)
+    // console.log('positioning food to',xx,yy)
     piece.xx = xx;
     piece.yy = yy;
     const size = piece.size;
 
     if(xx>=0){
-        console.log('calc(50% - '+ size/2 + '% + '+(xx/2).toString()+'%)')
+        // console.log('calc(50% - '+ size/2 + '% + '+(xx/2).toString()+'%)')
         piece.style.setProperty('left','calc(50% - '+ size/2 + '% + '+(xx/2).toString()+'%)')
     }else{
-        console.log('calc(50% - '+ size/2 + '% - '+abs(xx/2).toString()+'%)')
+        // console.log('calc(50% - '+ size/2 + '% - '+abs(xx/2).toString()+'%)')
         piece.style.setProperty('left','calc(50% - '+ size/2 + '% - '+abs(xx/2).toString()+'%)')
     }
 
     if(yy>=0){
-        console.log('calc(50% - '+ size/2 + '% + '+(yy/2).toString()+'%)')
+        // console.log('calc(50% - '+ size/2 + '% + '+(yy/2).toString()+'%)')
         piece.style.setProperty('top','calc(50% - '+ size/2 + '% + '+(yy/2).toString()+'%)')
     }else{
-        console.log('calc(50% - '+ size/2 + '% - '+abs(yy/2).toString()+'%)')
+        // console.log('calc(50% - '+ size/2 + '% - '+abs(yy/2).toString()+'%)')
         piece.style.setProperty('top','calc(50% - '+ size/2 + '% - '+abs(yy/2).toString()+'%)')
     }
 
@@ -167,12 +228,16 @@ function cloneCreature(which){
     main.appendChild(newCreature)
     newCreature.maxSpeed = which.maxSpeed;
     newCreature.accel = which.accel;
-    newCreature.vel = [0,0];
+    newCreature.vel = [random(),random()];
     newCreature.spin = 0;
     newCreature.spinAccel = which.spinAccel
     newCreature.maxSpin = which.maxSpin;
     newCreature.turning = 0;
-    newCreature.targetPoint = null;
+    newCreature.target = null;
+    newCreature.range = which.range;
+    newCreature.spinglide = which.spinglide
+    newCreature.glidesteps = which.glidesteps
+    newCreature.aimrange = which.aimrange
     setSize(creatureStartSize, newCreature)
     randomColor(newCreature)
     setRotation(random()*360, newCreature)
@@ -191,7 +256,7 @@ function setLocation(cx, cy, which){
     var xx = cx/2;
     var yy = cy/2;
    //console.log('location input',xx,yy)
-   const offset = which.size/2;
+   const offset = 0//which.size/2;
    const limit = 50+offset;
     if(xx > limit){
         xx = -limit
@@ -248,18 +313,72 @@ function setRotation(deg, which){
     which.style.transform = "rotate("+deg.toString()+"deg)"
 }
 
+function kill(which){
+    which.remove();
+
+}
 
 
-function calc(which){
-    const posx = which.xx;
-    const posy = which.yy
-    const newpos = [posx + which.vel[0] , posy + which.vel[1]]
-    setLocation( newpos[0], newpos[1], which )
-    setRotation(which.rotation + which.spin, which)
+function calcNearestTarget(which){
+    if (foods.length === 0){ which.target = null; return}
+    const potentials = []
+    const distances = []
+    for(let f of foods){
+        const diffx = abs(f.xx-which.xx)
+        const diffy = abs(f.yy-which.yy)
+        // console.log(diffx,diffy,which.range)
+        if(diffx>which.range || diffy>which.range) continue;
+        const dist = distance(which.xx,which.yy, f.xx,f.yy)
+        // console.log('target qualified',dist)
+        if (dist<which.range){ potentials.push(f); distances.push(dist)}
+    }
+    // console.log('targets scanned',potentials)
+    if (potentials.length === 0){which.target = null; return}
+    let closest = 0 //index of closest potential target
+    for(let i in distances){
+        if(distances[i]<distances[closest]){
+            closest = i
+        }
+    }
+    which.target = potentials[closest]
+    
+    const consumeRange = which.size/2 + potentials[closest].size/2-1
+    // console.log(distances[closest],consumeRange)
+    if(distances[closest]<consumeRange){
+        eatTheFood(which)
+    }
+    // console.log("target found")
+}
 
+function eatTheFood(which){
+    // console.log('eating food')
+    const findex = foods.indexOf(which.target)
+    foods[findex].remove()
+    foods[findex] = null
+    foods.splice(findex,1)
+    which.target = null;
+    setSize(which.size + 1, which)
+    if(which.size > puberty){
+        cloneCreature(which)
+        setSize(which.size - 8, which)
+    }
+}
 
-    if(which.targetPoint != null){
-        const tp = which.targetPoint
+function calcSpin(which){
+    if(!(which.turning === 0)){
+        which.spin *= 1-dampR*which.spin
+        which.spin += which.spinAccel*which.turning
+        if(which.spin > which.maxSpin ){
+            which.spin = which.maxSpin
+        }else if(which.spin < -which.maxSpin){
+            which.spin = -which.maxSpin
+        }
+    }
+}
+
+function calcTurn(which){
+    if(which.target != null){
+        const tp = [which.target.xx, which.target.yy]
         const goal = angleOfTargetPoint(tp[0],tp[1],which)
         var diff = goal - which.rotation;
         diff = diff%360;
@@ -269,10 +388,10 @@ function calc(which){
         // console.log('goal',goal)
         // console.log('angle',which.rotation)
         //console.log('diff',floor(diff))
-        const spinglide = 160;
-        if((which.turning != 1) && (diff > which.spin*spinglide) && (diff <= 180) ){
+        
+        if((which.turning != 1) && (diff > which.spin*which.spinglide) && (diff <= 180) ){
             which.turning = 1;
-        }else if((which.turning != -1) && (diff < (360+which.spin*spinglide)) && (diff > 180) ){
+        }else if((which.turning != -1) && (diff < (360+which.spin*which.spinglide)) && (diff > 180) ){
             which.turning = -1;
         }else{
             which.turning = 0;
@@ -280,55 +399,24 @@ function calc(which){
     }else{
         which.turning = 0;
     }
-
-    if(which.turning === 0){
-        //do nothing
-    }else{
-        which.spin *= 1-dampR*which.spin
-        which.spin += which.spinAccel*which.turning
-        if(which.spin > which.maxSpin ){
-            which.spin = which.maxSpin
-        }else if(which.spin < -which.maxSpin){
-            which.spin = -which.maxSpin
-        }
-    }
-
-    const dirvec = dirVecFromDeg(which.rotation)
-    which.vel[0] *= 1-dampC;
-    which.vel[1] *= 1-dampC;
-
-    if(shouldAccel(which)[0]){
-        which.vel[0] += dirvec[0]*which.accel
-    }
-    if(shouldAccel(which)[1]){
-        which.vel[1] += dirvec[1]*which.accel
-    }
-
-    let speed = Math.sqrt(which.vel[0]**2 + which.vel[1]**2)
-
-    const srat = speed/which.maxSpeed;
-    if(srat >1){
-        which.vel[0] /= srat
-        which.vel[1] /= srat
-    }
-    
 }
 
-
 function shouldAccel(which){
+    if (which.target == null) {return [true,true]};
+
     const xxc = which.xx;
     const yyc = which.yy;
-    const xxt = which.targetPoint[0]
-    const yyt = which.targetPoint[1]
+    const xxt = which.target.xx
+    const yyt = which.target.yy
     const xv = which.vel[0]
     const yv = which.vel[1]
     const distx = xxt-xxc;
     const disty = yyt-yyc;
-    const steps = 40;
+    
 
 
-    const glidex = xv*steps - dampexp(xv,steps)  
-    const glidey = yv*steps - dampexp(yv,steps)  
+    const glidex = xv*which.glidesteps - dampexp(xv,which.glidesteps)  
+    const glidey = yv*which.glidesteps - dampexp(yv,which.glidesteps)  
     
 
     const goal = angleOfTargetPoint(xxt,yyt,which)
@@ -337,12 +425,13 @@ function shouldAccel(which){
     if(diff<0){
         diff+=360;
     }
-    const range = 20;
-    const aimed = (diff<range || diff >(360-range))
+    const underrange = (diff < which.aimrange)
+    const overrange = (diff > (360 - which.aimrange));
+    const aimed = (underrange || overrange);
 
-    let SAx = aimed && ((distx>0 && distx>glidex) || ( distx<0 && distx<glidex))
-    let SAy = aimed && ((disty>0 && disty>glidey) || ( disty<0 && disty<glidey))
-    return [SAx, SAy]
+    let SAx = aimed && ((distx>0 && distx>glidex) || ( distx<0 && distx<glidex));
+    let SAy = aimed && ((disty>0 && disty>glidey) || ( disty<0 && disty<glidey));
+    return [SAx, SAy];
 
 }
 
