@@ -104,8 +104,8 @@ const foodStartSize = 1;
 const growthRate = 1;
 const divideloss = 2;
 //set starting creature parameters
-creature.maxSpeed = 0.1; //0.1
-creature.accel = 0.01;//0.01
+creature.maxSpeed = 0.2; //0.1
+creature.accel = 0.02;//0.01
 creature.spinAccel = 0.1;//0.1
 creature.maxSpin = 2; //2
 creature.range = 100; //100
