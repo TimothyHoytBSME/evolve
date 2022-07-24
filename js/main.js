@@ -95,7 +95,7 @@ const dampR = 0.04;
 
 const creatures = [];
 const foods = [];
-const starveRate = 0.005; //0.001
+const starveRate = 0.001; //0.001
 const minimumSize = 2;
 const puberty = 10;
 const foodRate = 1;
