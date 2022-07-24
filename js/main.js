@@ -2,14 +2,57 @@
 
 // imports
 const {sin, cos, random, floor, abs} = Math
-
-
+let trialNum = trunc(random()*10000000,7)
 //
 //setup
 ///////////////////
 
-//declare fundamentals and hierarchy
-const creature = document.createElement('div')
+// //declare fundamentals and hierarchy
+const logOption = document.createElement('div')
+logOption.classList.add('log-option')
+const checkboxLog = document.createElement('input')  //checkboxes[0]
+checkboxLog.type = "checkbox"
+checkboxLog.classList.add('checkbox-log')
+const checknote = document.createTextNode(`Log mutations to Local Storage: (Check to record)  (F5 to start new)`)
+
+checkboxLog.addEventListener('change', ()=>{
+
+    if(checkboxLog.checked){
+        checknote.nodeValue = `(Log mutations to Local Storage: recording trial ${trialNum} )  (F5 to start new)`
+    }else{
+        trialNum = trunc(random()*10000000,7)
+        checknote.nodeValue = `(Log mutations to Local Storage: not saving )  (F5 to start new)`
+    }
+})
+
+const stats = document.createElement('div')
+stats.classList.add('stats')
+
+
+const statsOption = document.createElement('div')
+statsOption.classList.add('stats-option')
+const checkboxStats = document.createElement('input')  //checkboxes[0]
+checkboxStats.type = "checkbox"
+checkboxStats.classList.add('checkbox-stats')
+
+const statsToggleLabel = document.createTextNode('Display Stats')
+
+checkboxStats.addEventListener('change', ()=>{
+
+    if(checkboxStats.checked){
+        stats.style.display = "block"
+    }else{
+        stats.style.display = "none"
+    }
+})
+
+
+
+const leaderDisplay = document.createElement('div')
+leaderDisplay.classList.add("leader-display")
+const statsDisplay = document.createElement('div')
+statsDisplay.classList.add('stats-display')
+const creature = document.createElement('div') 
 creature.innerHTML = '1';
 const cpointer = document.createElement('div')
 const food = document.createElement('div')
@@ -18,89 +61,104 @@ cpointer.classList.add('cpointer')
 food.classList.add('food')
 const mains = document.body.getElementsByTagName('main')
 const main = mains[0]
+
+
+stats.appendChild(leaderDisplay)
+stats.appendChild(statsDisplay)
 creature.appendChild(cpointer)
+logOption.appendChild(checkboxLog)
+logOption.appendChild(checknote)
+statsOption.appendChild(checkboxStats)
+statsOption.appendChild(statsToggleLabel)
 main.appendChild(creature)
 main.appendChild(food)
-
+main.appendChild(logOption)
+main.appendChild(statsOption)
+main.appendChild(stats)
 //set environment
 const mouseP = [0,0]
 var mouseIn = false;
+var firstframe = true;
+var famNum = 0;
+var leader = creature
+
 const creatureStartSize = 5;
-const creatureStartCount = 10;
-const foodStartCount = 40;
+const creatureStartCount = 12;
+
+const familyStats = new Array(creatureStartCount)
+const foodStartCount = 300;
 const dampC = 0.02;
 const dampR = 0.04;
-var firstframe = true;
+
 const creatures = [];
 const foods = [];
-const starveRate = 0.002;
-const minimumSize = 1;
-const puberty = 16;
-
+const starveRate = 0.005; //0.001
+const minimumSize = 2;
+const puberty = 10;
+const foodRate = 1;
+const mutationRate = 0.25;
+const foodStartSize = 1;
+const growthRate = 1;
+const divideloss = 2;
 //set starting creature parameters
-creature.maxSpeed = 1;
-creature.accel = 0.01;
-creature.spinAccel = 0.1;
-creature.maxSpin = 2;
-creature.range = 100;
-creature.spinglide = 160;
-creature.glidesteps = 40;
-creature.aimrange = 20;
+creature.maxSpeed = 1; //0.1
+creature.accel = 0.04;//0.01
+creature.spinAccel = 0.1;//0.1
+creature.maxSpin = 2; //2
+creature.range = 100; //100
+creature.spinglide = 160; //160
+creature.glidesteps = 5; //40
+creature.aimrange = 20; //20
 
 //set initial values of fundamentals
+creature.familyNumber = -1;
+creature.generation = 1;
 creature.vel = [0,0];
 creature.spin = 0;
 creature.turning = 0;   //(-1, 0, 1) for CCW, none, CW
 creature.target = null; //becomes vector of location values
+creature.eatCount = 0;
 
 setSize(creatureStartSize, creature)
 randomColor(creature)
 setRotation(60, creature)
 setLocation(-50,-50,creature)
-sizeFood(3,food)
-positionFood(random()*160-80,random()*160-80,food)
+sizeFood(foodStartSize,food)
+const xrand = random()*160;
+const yrand = random()*160;
+positionFood(parseInt(xrand)-80,parseInt(yrand)-80,food)
 
 foods.push(food)
 creatures.push(creature)
 
 function looper(){
+
     if(this.time === undefined || this.time === null){ this.time = 0; this.delay = 0; }
+    
+    
+    
     if(firstframe){
-        for(let i = 1; i< creatureStartCount; i++){
+        for(let i = 0; i< creatureStartCount; i++){
             cloneCreature(creature)
         }
+        kill(creature)
         for(let i = 1; i< foodStartCount; i++){
             cloneFood(food)
         }
     }
 
-    if(this.time%50 === 0){
+    if(this.time%floor(100/foodRate) === 0){
         cloneFood(food)
     }
 
-    // var w = window.innerWidth;
-    // var h = window.innerHeight;
-    // var ar = h/w;
-
-    // creature.targetPoint = [food.xx,food.yy]
-    // creature2.targetPoint = [food2.xx,food2.yy]
-    // console.log('C1 target: ',creature.targetPoint)
-    // console.log("C2 target: ", creature2.targetPoint)
-    // const radius = 10;
-    //creature.accel = 0;
-    //setRotation(90+this.time/4, creature)
-    // console.log(mouseP, mouseIn)
-    //console.log('looping',this.time)
-    // console.log('rotation', creature.rotation)
-    //console.log(angleOfTargetPoint(mouseP[0],mouseP[1],creature))
-    // console.log("creature",creature.turning)
-
-    //console.log("creature1",creature2.turning)
-    // console.log(floor(creature.xx), floor(creature.yy))
-    // console.log(floor(mouseP[0]), floor(mouseP[1]))
-
-
-    for(var i=0; i<creatures.length; i++){calc(creatures[i])}
+    leaderDisplay.style.backgroundColor = leader.style.backgroundColor
+    leaderDisplay.innerText = "Leader: Gen " +leader.generation.toString()+", Score " +leader.eatCount.toString()
+    
+    
+    
+    for(var i=0; i<creatures.length; i++){
+        calc(creatures[i])
+    }
     this.time++;
     firstframe = false;
     setTimeout(()=>{looper();},this.delay)    
@@ -113,36 +171,45 @@ function looper(){
 
 function calc(which){
     setSize(which.size-starveRate,which)
+    // console.log(which.size)
     if(which.size<minimumSize){
         kill(which)
     }
 
     calcNearestTarget(which)
-
-
+    
     const newpos = [which.xx + which.vel[0] , which.yy + which.vel[1]]
     setLocation( newpos[0], newpos[1], which )
     setRotation(which.rotation + which.spin, which)
     calcTurn(which)
     calcSpin(which)
-
     const dirvec = dirVecFromDeg(which.rotation)
-    which.vel[0] *= 1-dampC;
-    which.vel[1] *= 1-dampC;
+    
 
+    which.vel[0] = which.vel[0]*(1-dampC);
+    which.vel[1] = which.vel[1]*(1-dampC);
+    
     if(shouldAccel(which)[0]){
         which.vel[0] += dirvec[0]*which.accel
     }
     if(shouldAccel(which)[1]){
         which.vel[1] += dirvec[1]*which.accel
     }
+  
+    
+    let spx = which.vel[0]**2
+    let spy = which.vel[1]**2
+    let sp = spx + spy
+    
+    let speedsq = sp
+    let speed = Math.sqrt(speedsq)
 
-    let speed = Math.sqrt(which.vel[0]**2 + which.vel[1]**2)
-
+    
     const srat = speed/which.maxSpeed;
+    
     if(srat >1){
-        which.vel[0] /= srat
-        which.vel[1] /= srat
+        which.vel[0] = which.vel[0]/srat
+        which.vel[1] = which.vel[1]/srat
     }
     
 }
@@ -165,7 +232,6 @@ window.addEventListener("mouseout", ()=>{
     mouseIn = false;
 })
 window.addEventListener("resize", ()=>{
-    // console.log('resize event size',creature.size)
     for(var c of creatures){
         setSize(c.size,c)
     }
@@ -182,32 +248,26 @@ looper()
 function cloneFood(piece){
     const newPiece = piece.cloneNode(true)
     main.appendChild(newPiece)
-    // newPiece.xx = 0; newPiece.yy = 0;
-    sizeFood(3, newPiece)
+    sizeFood(foodStartSize, newPiece)
     positionFood(random()*160-80,random()*160-80,newPiece)
     foods.push(newPiece)
     return newPiece
 }
 
 function positionFood(xx,yy,piece){
-    // console.log('positioning food to',xx,yy)
     piece.xx = xx;
     piece.yy = yy;
     const size = piece.size;
 
     if(xx>=0){
-        // console.log('calc(50% - '+ size/2 + '% + '+(xx/2).toString()+'%)')
         piece.style.setProperty('left','calc(50% - '+ size/2 + '% + '+(xx/2).toString()+'%)')
     }else{
-        // console.log('calc(50% - '+ size/2 + '% - '+abs(xx/2).toString()+'%)')
         piece.style.setProperty('left','calc(50% - '+ size/2 + '% - '+abs(xx/2).toString()+'%)')
     }
 
     if(yy>=0){
-        // console.log('calc(50% - '+ size/2 + '% + '+(yy/2).toString()+'%)')
         piece.style.setProperty('top','calc(50% - '+ size/2 + '% + '+(yy/2).toString()+'%)')
     }else{
-        // console.log('calc(50% - '+ size/2 + '% - '+abs(yy/2).toString()+'%)')
         piece.style.setProperty('top','calc(50% - '+ size/2 + '% - '+abs(yy/2).toString()+'%)')
     }
 
@@ -228,7 +288,7 @@ function cloneCreature(which){
     main.appendChild(newCreature)
     newCreature.maxSpeed = which.maxSpeed;
     newCreature.accel = which.accel;
-    newCreature.vel = [random(),random()];
+    newCreature.vel = [random()*2-1,random()*2-1];
     newCreature.spin = 0;
     newCreature.spinAccel = which.spinAccel
     newCreature.maxSpin = which.maxSpin;
@@ -238,24 +298,106 @@ function cloneCreature(which){
     newCreature.spinglide = which.spinglide
     newCreature.glidesteps = which.glidesteps
     newCreature.aimrange = which.aimrange
+    newCreature.eatCount = 0;
+    newCreature.familyNumber = which.familyNumber
     setSize(creatureStartSize, newCreature)
-    randomColor(newCreature)
+    newCreature.style.backgroundColor = which.style.backgroundColor
     setRotation(random()*360, newCreature)
     setLocation(which.xx,which.yy,newCreature)
     creatures.push(newCreature)
-    newCreature.innerHTML = creatures.length.toString();
+    newCreature.generation = which.generation + 1;
+    newCreature.innerHTML = '<div style="margin-top: 15%"}>'+newCreature.generation.toString() + "</div>"+"<div>" + newCreature.eatCount.toString()+"</div>";
     newCreature.appendChild(cpointer.cloneNode(true))
+    mutate(newCreature)
+
+    //set initials of first family members
+    if(famNum<creatureStartCount){
+        // console.log('newfamily',famNum)
+        newCreature.style.backgroundColor = 'hsla(' + (famNum*360/creatureStartCount).toString() + ', 100%, 50%,0.5)';
+        setLocation(random()*160-80,random()*160-80,newCreature)
+        newCreature.vel = [0,0]
+        newCreature.familyNumber = famNum
+        familyStats[famNum] = {
+            familyNum: famNum
+            ,familyColor: newCreature.style.backgroundColor
+            ,members: [newCreature]
+            ,maxGen: newCreature.generation
+            ,count: 1
+        }
+        famNum++
+    }else{
+        // console.log(familyStats)
+        const fnum = newCreature.familyNumber
+        // console.log(fnum)
+        // console.log(familyStats[fnum])
+        familyStats[fnum].members.push(newCreature)
+        if(newCreature.generation > familyStats[fnum].maxGen){
+            familyStats[fnum].maxGen = newCreature.generation
+        }
+        familyStats[fnum].count++
+    }
+
     return newCreature
 }
 
+function mutate(which){
+    which.maxSpeed *= 1+(random()*2-1)*mutationRate    // 0.2; //1
+    which.accel *= 1+(random()*2-1)*mutationRate    // 0.002;//0.01
+    which.spinAccel *= 1+(random()*2-1)*mutationRate    // 0.05;//0.1
+    which.maxSpin *= 1+(random()*2-1)*mutationRate    // 1; //2
+    which.range *= 1+(random()*2-1)*mutationRate  // 50; //100
+    which.spinglide *= 1+(random()*2-1)*mutationRate   // 60; //160
+    which.glidesteps *= 1+(random()*2-1)*mutationRate    // 1; //40
+    which.aimrange *= 1+(random()*2-1)*mutationRate      //20; //20
+         // 20; //20
 
+    which.maxSpeed = trunc(which.maxSpeed)
+    which.accel = trunc(which.accel)
+    which.spinAccel = trunc(which.spinAccel)
+    which.maxSpin = trunc(which.maxSpin)
+    which.range = trunc(which.range)
+    which.spinglide = trunc(which.spinglide)
+    which.glidesteps = trunc(which.glidesteps)
+    which.aimrange = trunc(which.aimrange)
+
+    // console.log('Mutation new stats ')
+    // console.log('generation: ',which.generation)
+    // console.log('familycolor', which.style.backgroundColor)
+    // console.log('maxSpeed',which.maxSpeed  )     // 0.2; //1
+    // console.log('accel',which.accel     )  // 0.002;//0.01
+    // console.log('spinAccel',which.spinAccel )      // 0.05;//0.1
+    // console.log('maxSpin',which.maxSpin   )    // 1; //2
+    // console.log('range',which.range     )  // 50; //100
+    // console.log('spinglide',which.spinglide )      // 60; //160
+    // console.log('glidesteps',which.glidesteps)       // 1; //40
+    // console.log('aimrange',which.aimrange  )        //20; //20
+
+    if(checkboxLog.checked){
+        const storagekey = 'EvolveTrial'+trialNum.toString()
+        var localData = JSON.parse(localStorage.getItem(storagekey))
+        if(localData===null){
+            localData = []
+        }
+        localData.push(
+            { generation: which.generation 
+            , familycolor: which.style.backgroundColor
+            , accel: which.accel
+            , spnAccel: which.spinAccel
+            , maxSpin: which.maxSpin
+            , range: which.range
+            , spinglide: which.spinglide
+            , glidesteps: which.glidesteps
+            , aimrange: which.aimrange
+            }
+        )
+        localStorage.setItem(storagekey, JSON.stringify(localData))
+    }
+}
 
 // screen center is 0,0; x from -100 to 100, y from -100 to 100.
 function setLocation(cx, cy, which){
-    
     var xx = cx/2;
     var yy = cy/2;
-   //console.log('location input',xx,yy)
    const offset = 0//which.size/2;
    const limit = 50+offset;
     if(xx > limit){
@@ -269,10 +411,9 @@ function setLocation(cx, cy, which){
     }else if(yy < -limit){
         yy = limit
     }
-
+    
     which.xx = xx*2
     which.yy = yy*2;
-
     if(cx>=0){
         which.style.setProperty('left','calc(50% - '+ which.size/2 + '% + '+xx.toString()+'%)')
     }else{
@@ -288,7 +429,6 @@ function setLocation(cx, cy, which){
 
 
 function setSize(num, which){
-    // console.log('resizing', which)
     which.size = num;
     if(window.innerHeight > window.innerWidth){
         which.style.width = num.toString() + 'vw'
@@ -297,14 +437,12 @@ function setSize(num, which){
         which.style.width = num.toString() + 'vh'
         which.style.fontSize = (num/2.5).toString()+ 'vh'
     }
-    // console.log(which.style.width)
 }
 
 
 function randomColor (which){
-    which.style.backgroundColor = 'hsl('+(random()*360).toString()+', 100%, 50%)';
+    which.style.backgroundColor = 'hsla(' + (random()*360).toString() + ', 100%, 50%,0.5)';
 }
-
 
 
 function setRotation(deg, which){
@@ -314,7 +452,36 @@ function setRotation(deg, which){
 }
 
 function kill(which){
+    //family stats adjust
+    const fn = which.familyNumber
+    
+    if(fn >= 0){
+        const family = familyStats[fn]
+        const members = family.members
+        const fmindex = members.indexOf(which)
+        console.log('killing creature')
+
+        members[fmindex] = null
+        members.splice(fmindex,1)
+        family.maxGen = 0;
+        for(let m = 0; m<members.length; m++){
+            const member = members[m]
+            if(member.generation > family.maxGen){
+                family.maxGen = member.generation
+            }
+        }
+        family.count--
+        // console.log(family.count)
+        if(family.count === 0){
+            console.log('family ', fn, ' extinct')
+        }
+        // console.log(familyStats[fn])
+    }
+    
+    const cindex = creatures.indexOf(which)
     which.remove();
+    creatures[cindex] == null
+    creatures.splice(cindex,1)
 
 }
 
@@ -326,16 +493,14 @@ function calcNearestTarget(which){
     for(let f of foods){
         const diffx = abs(f.xx-which.xx)
         const diffy = abs(f.yy-which.yy)
-        // console.log(diffx,diffy,which.range)
         if(diffx>which.range || diffy>which.range) continue;
         const dist = distance(which.xx,which.yy, f.xx,f.yy)
-        // console.log('target qualified',dist)
         if (dist<which.range){ potentials.push(f); distances.push(dist)}
     }
-    // console.log('targets scanned',potentials)
     if (potentials.length === 0){which.target = null; return}
     let closest = 0 //index of closest potential target
     for(let i in distances){
+        i = parseInt(i)
         if(distances[i]<distances[closest]){
             closest = i
         }
@@ -343,30 +508,34 @@ function calcNearestTarget(which){
     which.target = potentials[closest]
     
     const consumeRange = which.size/2 + potentials[closest].size/2-1
-    // console.log(distances[closest],consumeRange)
     if(distances[closest]<consumeRange){
         eatTheFood(which)
     }
-    // console.log("target found")
 }
 
 function eatTheFood(which){
-    // console.log('eating food')
     const findex = foods.indexOf(which.target)
     foods[findex].remove()
     foods[findex] = null
     foods.splice(findex,1)
     which.target = null;
-    setSize(which.size + 1, which)
+    setSize(which.size + growthRate, which)
+    which.eatCount++;
+    if(which.eatCount>leader.eatCount){
+        leader = which;
+    }
+    // console.log(leader)
+    which.innerHTML = '<div style="margin-top: 15%"}>'+which.generation.toString() + "</div>"+"<div>" + which.eatCount.toString()+"</div>";
+    which.appendChild(cpointer.cloneNode(true))
     if(which.size > puberty){
         cloneCreature(which)
-        setSize(which.size - 8, which)
+        setSize(which.size/divideloss, which)
     }
 }
 
 function calcSpin(which){
     if(!(which.turning === 0)){
-        which.spin *= 1-dampR*which.spin
+        which.spin *= 1-trunc(dampR*which.spin)
         which.spin += which.spinAccel*which.turning
         if(which.spin > which.maxSpin ){
             which.spin = which.maxSpin
@@ -385,9 +554,6 @@ function calcTurn(which){
         if(diff<0){
             diff+=360;
         }
-        // console.log('goal',goal)
-        // console.log('angle',which.rotation)
-        //console.log('diff',floor(diff))
         
         if((which.turning != 1) && (diff > which.spin*which.spinglide) && (diff <= 180) ){
             which.turning = 1;
@@ -454,14 +620,12 @@ function angleOfTargetPoint(xx,yy,which){
         diffy = diffy+200;
     }
 
-    angle = radtodeg(Math.atan2(diffy,diffx))
+    angle = radtodeg(trunc(Math.atan2(diffy,diffx)))
     angle += 90;
     if (angle < 0){angle+=360}
     else if (angle >=360){
         angle-=360
     }
-    // angle = angle % 360
-    // console.log(angle)
     return angle
 }
 
@@ -475,7 +639,7 @@ function dampexp(speed,gs){
     return ret;
 }
 function distance(x1,y1,x2,y2){
-    return Math.sqrt((x2-x1)**2+(y2-y1)**2)
+    return Math.sqrt(trunc((x2-x1)**2)+trunc((y2-y1)**2))
 }
 
 function degtorad(deg){
@@ -483,7 +647,7 @@ function degtorad(deg){
 }
 
 function radtodeg(rad){
-    return rad*180/Math.PI
+    return rad*180/trunc(Math.PI)
 }
 
 function dirVecFromDeg(deg){
@@ -494,4 +658,25 @@ function dirVecFromDeg(deg){
 }
 
 
-
+function trunc(val, prec = 8){
+    const stringnum = val.toPrecision(prec)
+    let decp = 0
+    let dpfound = false;
+    let firstdnfound = false;
+    let lastdigit = '1';
+    for(let i=0; i<stringnum.length; i++){
+        const std = stringnum[i]
+        if(std==='.'){dpfound=true}
+        if(dpfound){
+            if(std!='0'){firstdnfound = true}
+        }
+        if(dpfound && firstdnfound){
+            if(lastdigit==='0'&&std=='0') break
+            decp++
+            lastdigit = std
+        }
+    }
+    let ret = +parseFloat(val.toPrecision(prec)).toFixed(decp)
+    if(typeof(ret) != "number"){throw new Error}
+    return ret
+}

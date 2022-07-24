@@ -17,14 +17,40 @@ body {
 main {
   position: relative;
   background-color: rgb(64, 64, 64);
-  display: block;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
   overflow: hidden;
 }
 
+.checkbox-log, .checkbox-stats{
+  width: fit-content;
+  z-index: 11;
+}
+
+
+.leader-display{
+  height: 1em;
+  font-weight: 700;
+  width: fit-content;
+  padding: 1%;
+  color: black;
+  white-space: nowrap;
+  
+}
+
+.stats{
+  width: fit-content;
+  height: fit-content;
+  z-index: 10;
+  display: none;
+}
+
+
 .creature{
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   aspect-ratio: 1;
@@ -35,6 +61,8 @@ main {
   color: black;
   z-index: 2;
   text-align: center;
+  line-height: 0.8em;
+  
 }
 
 
@@ -57,3 +85,6 @@ main {
   left: calc(50% - var(--creature-paint-size) / 2);
   z-index: 3;
 }
+
+
+
