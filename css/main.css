@@ -29,6 +29,12 @@ main {
   z-index: 11;
 }
 
+.stats{
+  width: fit-content;
+  height: fit-content;
+  z-index: 10;
+  display: none;
+}
 
 .leader-display{
   height: 1em;
@@ -40,11 +46,8 @@ main {
   
 }
 
-.stats{
-  width: fit-content;
-  height: fit-content;
-  z-index: 10;
-  display: none;
+.stats-display{
+  color: black
 }
 
 

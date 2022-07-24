@@ -50,8 +50,11 @@ checkboxStats.addEventListener('change', ()=>{
 
 const leaderDisplay = document.createElement('div')
 leaderDisplay.classList.add("leader-display")
-const statsDisplay = document.createElement('div')
+const statsDisplay = document.createElement('table')
 statsDisplay.classList.add('stats-display')
+
+
+
 const creature = document.createElement('div') 
 creature.innerHTML = '1';
 const cpointer = document.createElement('div')
@@ -101,13 +104,13 @@ const foodStartSize = 1;
 const growthRate = 1;
 const divideloss = 2;
 //set starting creature parameters
-creature.maxSpeed = 1; //0.1
-creature.accel = 0.04;//0.01
+creature.maxSpeed = 0.1; //0.1
+creature.accel = 0.01;//0.01
 creature.spinAccel = 0.1;//0.1
 creature.maxSpin = 2; //2
 creature.range = 100; //100
 creature.spinglide = 160; //160
-creature.glidesteps = 5; //40
+creature.glidesteps = 40; //40
 creature.aimrange = 20; //20
 
 //set initial values of fundamentals
@@ -153,8 +156,24 @@ function looper(){
 
     leaderDisplay.style.backgroundColor = leader.style.backgroundColor
     leaderDisplay.innerText = "Leader: Gen " +leader.generation.toString()+", Score " +leader.eatCount.toString()
-    
-    
+    statsDisplay.innerHTML = ""
+    const tHead = statsDisplay.createTHead();
+    const head = tHead.insertRow(0)
+    head.insertCell(0).innerHTML = "<b>Max Gen</b>"
+    head.insertCell(1).innerHTML = "<b>Members</b>"
+    for(let f in familyStats){
+        const row = statsDisplay.insertRow(i)
+        const cell1 = row.insertCell(0)
+        cell1.innerHTML = familyStats[f].maxGen
+        cell1.style.backgroundColor = familyStats[f].familyColor
+        const cell2 = row.insertCell(1)
+        cell2.innerHTML = familyStats[f].count
+        cell2.style.backgroundColor = familyStats[f].familyColor
+    }   
+
+    // const row1 = statsDisplay.insertRow(0)
+    // const cell1 = row1.insertCell(0)
+    // cell1.innerHTML = "hmmmmmm"
     
     for(var i=0; i<creatures.length; i++){
         calc(creatures[i])
@@ -328,13 +347,18 @@ function cloneCreature(which){
     }else{
         // console.log(familyStats)
         const fnum = newCreature.familyNumber
-        // console.log(fnum)
-        // console.log(familyStats[fnum])
-        familyStats[fnum].members.push(newCreature)
-        if(newCreature.generation > familyStats[fnum].maxGen){
-            familyStats[fnum].maxGen = newCreature.generation
+        const fams = familyStats.filter((e,i)=>{
+            return e.familyNum === fnum
+        })
+        // console.log('fams',fams)
+        const fam = fams[0]
+        // console.log('fam',fam)
+        // console.log(familyStats)
+        fam.members.push(newCreature)
+        if(newCreature.generation > fam.maxGen){
+            fam.maxGen = newCreature.generation
         }
-        familyStats[fnum].count++
+        fam.count++
     }
 
     return newCreature
@@ -454,12 +478,15 @@ function setRotation(deg, which){
 function kill(which){
     //family stats adjust
     const fn = which.familyNumber
-    
+    // console.log(fn)
     if(fn >= 0){
-        const family = familyStats[fn]
+        const fams = familyStats.filter((e,i)=>{
+            return e.familyNum === fn
+        })
+        const family = fams[0]
+        const findex = familyStats.indexOf(family)
         const members = family.members
         const fmindex = members.indexOf(which)
-        console.log('killing creature')
 
         members[fmindex] = null
         members.splice(fmindex,1)
@@ -474,6 +501,7 @@ function kill(which){
         // console.log(family.count)
         if(family.count === 0){
             console.log('family ', fn, ' extinct')
+            familyStats.splice(findex,1)
         }
         // console.log(familyStats[fn])
     }
