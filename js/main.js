@@ -89,16 +89,16 @@ const creatureStartSize = 5;
 const creatureStartCount = 12;
 
 const familyStats = new Array(creatureStartCount)
-const foodStartCount = 300;
+const foodStartCount = 50;
 const dampC = 0.02;
 const dampR = 0.04;
 
 const creatures = [];
 const foods = [];
-const starveRate = 0.001; //0.001
+const starveRate = 0.002; //0.001
 const minimumSize = 2;
 const puberty = 10;
-const foodRate = 1;
+const foodRate = 5;
 const mutationRate = 0.25;
 const foodStartSize = 1;
 const growthRate = 1;
