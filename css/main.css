@@ -33,24 +33,40 @@ main {
   width: fit-content;
   height: fit-content;
   z-index: 10;
-  display: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  margin: 2%
 }
 
 .leader-display{
   height: 1em;
   font-weight: 700;
   width: fit-content;
-  padding: 1%;
+  padding: 4%;
+  padding-top: 1%;
+  /* margin-left: 5%; */
   color: black;
   white-space: nowrap;
   
 }
 
 .stats-display{
-  color: black
+  color: black;
+  margin-top: 5%;
 }
 
+tr{
+  text-align: center;
+  font-weight: 700;
+}
 
+thead{
+  white-space: nowrap;
+  background-color: rgba(255,255,2550,0.5);
+}
 .creature{
   display: flex;
   flex-direction: column;

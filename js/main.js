@@ -40,9 +40,9 @@ const statsToggleLabel = document.createTextNode('Display Stats')
 checkboxStats.addEventListener('change', ()=>{
 
     if(checkboxStats.checked){
-        stats.style.display = "block"
+        stats.style.visibility = "visible"
     }else{
-        stats.style.display = "none"
+        stats.style.visibility = "hidden"
     }
 })
 
